@@ -1,0 +1,22 @@
+{
+  "name": "mozu-plugin-md",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Mozu-Plugin 官方文档站（VitePress）",
+  "homepage": "https://mozumiao.com",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/MozuGit/Mozu-Plugin-md.git"
+  },
+  "author": "@MozuGit",
+  "license": "GPL-3.0-only",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.4"
+  }
+}

@@ -1,0 +1,170 @@
+/**
+ * Mozu-Plugin 文档站主题定制
+ * 主色：修仙金 #d4a24c
+ * 结构参考 NapCatQQ 文档站（VitePress 默认主题 + 品牌色覆盖）
+ */
+
+:root {
+  /* 品牌色 */
+  --vp-c-brand-1: #a8762a;
+  --vp-c-brand-2: #c2933a;
+  --vp-c-brand-3: #d4a24c;
+  --vp-c-brand-soft: rgba(212, 162, 76, 0.14);
+
+  /* 主按钮 */
+  --vp-button-brand-border: transparent;
+  --vp-button-brand-text: #fff;
+  --vp-button-brand-bg: #c2933a;
+  --vp-button-brand-hover-border: transparent;
+  --vp-button-brand-hover-text: #fff;
+  --vp-button-brand-hover-bg: #d4a24c;
+  --vp-button-brand-active-border: transparent;
+  --vp-button-brand-active-text: #fff;
+  --vp-button-brand-active-bg: #a8762a;
+
+  /* 首页标题金色渐变 */
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(120deg, #b8862f 10%, #e8c37c 45%, #d4a24c 80%);
+  --vp-home-hero-image-background-image: linear-gradient(-45deg, rgba(212, 162, 76, 0.55) 30%, rgba(240, 214, 152, 0.55));
+  --vp-home-hero-image-filter: blur(48px);
+}
+
+.dark {
+  --vp-c-brand-1: #e8bd6b;
+  --vp-c-brand-2: #d4a24c;
+  --vp-c-brand-3: #b8862f;
+  --vp-c-brand-soft: rgba(212, 162, 76, 0.16);
+
+  --vp-button-brand-bg: #b8862f;
+  --vp-button-brand-hover-bg: #d4a24c;
+  --vp-button-brand-active-bg: #a8762a;
+
+  --vp-home-hero-name-background: linear-gradient(120deg, #e8c37c 10%, #f6e2b3 45%, #d4a24c 85%);
+  --vp-home-hero-image-background-image: linear-gradient(-45deg, rgba(184, 134, 47, 0.6) 30%, rgba(212, 162, 76, 0.6));
+}
+
+/* 侧边栏选中项与自定义容器配合金色主题 */
+.vp-doc .custom-block.tip {
+  border-color: var(--vp-c-brand-1);
+}
+
+/* 首页 Hero 头像：金色描边光环 */
+.VPHomeHero .image-container {
+  transform: translateY(-8px);
+}
+
+.VPHomeHero .VPImage.image-src {
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(212, 162, 76, 0.35), 0 12px 40px rgba(0, 0, 0, 0.18);
+}
+
+.VPHomeHero .name,
+.VPHomeHero .text {
+  letter-spacing: -0.02em;
+}
+
+/* 首页特性卡：金色悬浮描边 */
+.VPHomeFeatures .VPFeature {
+  transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+}
+
+.VPHomeFeatures .VPFeature:hover {
+  border-color: var(--vp-c-brand-2);
+  box-shadow: 0 8px 24px rgba(212, 162, 76, 0.16);
+  transform: translateY(-2px);
+}
+
+/* 首页下方 Markdown 区域与上方 Hero / 特性卡同宽（1152px），
+   padding 沿用 VitePress 的 24 / 48 / 64px 响应式规则 */
+.VPHome .vp-doc.container {
+  max-width: 1152px;
+}
+
+.VPHome .vp-doc > h2 {
+  border-top: none;
+  margin-top: 64px;
+  text-align: center;
+}
+
+.VPHome .vp-doc > h2 + p {
+  text-align: center;
+  color: var(--vp-c-text-2);
+}
+
+/* ---------- 生态 / 工具 / 社区 三列区块 ---------- */
+
+.mozu-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  margin: 32px 0 8px;
+}
+
+.mozu-links__group {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  padding: 20px 22px 12px;
+  background: var(--vp-c-bg-soft);
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.mozu-links__group:hover {
+  border-color: var(--vp-c-brand-2);
+  box-shadow: 0 8px 24px rgba(212, 162, 76, 0.12);
+}
+
+.mozu-links__title {
+  margin: 0 0 12px;
+  padding: 0;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--vp-c-text-1);
+}
+
+.mozu-links__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mozu-links__list li {
+  margin: 0;
+  padding: 0;
+}
+
+.mozu-links__list a {
+  display: block;
+  padding: 7px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+  text-decoration: none;
+  border-bottom: 1px dashed transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.mozu-links__list a::before {
+  content: '›';
+  margin-right: 8px;
+  color: var(--vp-c-brand-2);
+  font-weight: 700;
+}
+
+.mozu-links__list a:hover {
+  color: var(--vp-c-brand-1);
+  border-bottom-color: var(--vp-c-brand-3);
+}
+
+.mozu-links__list a .ext {
+  font-style: normal;
+  opacity: 0.6;
+  margin-left: 4px;
+}
+
+@media (max-width: 640px) {
+  .mozu-links {
+    grid-template-columns: 1fr;
+  }
+}

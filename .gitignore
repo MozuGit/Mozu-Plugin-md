@@ -1,0 +1,11 @@
+node_modules
+.DS_Store
+*.log
+
+# VitePress
+.vitepress/dist
+.vitepress/cache
+
+# 本地参考源码（不提交）
+.reference
+plugin.zip

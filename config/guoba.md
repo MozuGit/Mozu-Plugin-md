@@ -16,16 +16,16 @@ Mozu-Plugin 只提供「接入面板」所需的几个文件，不包含锅巴�
 | `guoba/configInfo.js` | 向面板暴露 `schemas`、`actions`、`getConfigData`、`setConfigData` |
 | `guoba/schemas/index.js` | 汇总 8 个分组 schema，并实现配置的读取、保存与校验 |
 
-读取：`getConfigData()` 返回插件的全量配置，但会把 `panel.login.password` 置空——**面版密码不会回显到前端**（`config.openai.apiKey` 之类的字段仍会回显，见 [AI 自动审核](/config/openai)）。
+读取：`getConfigData()` 返回插件的全量配置，但会把 `panel.login.password` 与 `panel.login.totp.secret` 一起置空——**面版密码与 TOTP 密钥都不会回显到前端**（`config.openai.apiKey` 之类的字段仍会回显，见 [AI 自动审核](/config/openai)）。
 
-保存：`setConfigData()` 把表单数据还原成嵌套结构后逐项写回 YAML；如果这次填了新密码，会先用 SHA-256 摘要再写进 `login.yaml`。
+保存：`setConfigData()` 把表单数据还原成嵌套结构后逐项写回 YAML；如果这次填了新密码，会先用 SHA-256 摘要再写进 `login.yaml`；`totp.secret` 留空则沿用原密钥（前端拿不到它，不能指望回填）。修仙配置的校验现在**在写入之前**执行，校验不过时整次保存被拒绝，不会留下写了一半的文件。
 
 ## 面板分组一览
 
 | 面板分组 | 对应文件 | 主要配置项 |
 | --- | --- | --- |
 | `Redis配置` | `guoba/schemas/Redis.js` | `config.Redis.global` / `host` / `port` / `database` / `connectTimeout` / `keepAlive` / `noDelay` |
-| `魔族陌面版` | `guoba/schemas/panel.js` | `panel.login.host` / `panel.login.port` / `panel.login.password`，以及「强制关闭 TOTP」按钮 |
+| `魔族陌面版` | `guoba/schemas/panel.js` | `panel.login.host` / `panel.login.port` / `panel.login.password` / `panel.login.trustProxy`，以及「强制关闭 TOTP」按钮 |
 | `修仙设置` | `guoba/schemas/xiuxian.js` | `xiuxian.setting.*`、`xiuxian.xiuxian.*`、`xiuxian.Realm.Realms`、`xiuxian.beast.*`、`xiuxian.sect.*`、`xiuxian.title.*`、`xiuxian.drop.*`、`xiuxian.sroot.*` |
 | `伪造聊天` | `guoba/schemas/makeMessage.js` | `example.makeMessage.enable` / `onlyMaster` / `whiteQQList` / `repeatCount` |
 | `发言统计` | `guoba/schemas/fayan.js` | `example.fayan.enable` / `sendMarkdown` / `count` |
@@ -55,9 +55,10 @@ Mozu-Plugin 只提供「接入面板」所需的几个文件，不包含锅巴�
 
 | 字段 / 按钮 | 面板名称 | 含义与默认值 |
 | --- | --- | --- |
-| `panel.login.host` | 服务器地址 | `auto` 表示自动获取本机 IP，也决定启动日志里打印的「外网地址」 |
+| `panel.login.host` | 服务器地址 | `auto` 表示自动获取本机 IP；只有 `host` 为 `auto` 时，启动日志才会打印「外网地址」那一行 |
 | `panel.login.port` | 监听端口号 | 管理台端口，默认 `11451`，可填 0–65535 |
-| `panel.login.password` | 面版密码 | 敏感信息不回显；留空则保持原密码不变 |
+| `panel.login.password` | 面版密码 | 组件由 `Input` 换成 `InputPassword`（默认隐藏、可切换明文）；留空则保持原密码不变 |
+| `panel.login.trustProxy` | 反代/CDN 信任 | 必填单选组，决定真实客户端 IP 怎么解析、登录限流按哪个 IP 记账：直连暴露（`false`，默认）/ 一层反代（`1`）/ CDN+反代（`2`）/ 完全信任头（`true`），**改后需重启**，详见 [部署与安全](/webui/security) |
 | `actions` → `forceClose` | 强制关闭TOTP | 验证器丢失时使用，会把 `totp.enabled` 置 `false` 并清空 `totp.secret` |
 
 ## 修仙设置
@@ -109,7 +110,7 @@ Mozu-Plugin 只提供「接入面板」所需的几个文件，不包含锅巴�
 | 修仙灵根设置 | `xiuxian.sroot.sroot` | 灵根表，每项含 `id`（唯一，不与物品 ID 冲突）、`name`、`addition` 战力加成（%）、`level` 所属概率档 |
 
 ::: warning 保存时的校验
-面板保存修仙配置前会检查两件事：`pills` 与 `arts` 的 `id` 是否重复（重复报「物品ID重复」）、`root_drop` 四档之和是否等于 100（不等报「灵根概率总和不等于100」）。这两处校验失败时整次保存都会被拒绝。
+面板保存修仙配置前会检查三件事，任一不过就整次拒绝保存：`pills` 与 `arts` 的 `id` 是否重复（报「物品ID重复」）、`sroot` 的灵根 `id` 是否重复（报「灵根ID重复」）、`root_drop` 四档之和是否等于 100（报「灵根概率总和不等于100」）。校验函数 `validateXiuxianConfig()` 在写文件**之前**调用，所以失败时不会留下写了一半的配置。
 :::
 
 ## 伪造聊天
@@ -188,9 +189,9 @@ Mozu-Plugin 只提供「接入面板」所需的几个文件，不包含锅巴�
 
 | 情况 | 是否需要重启 |
 | --- | --- |
-| 面板上标着「修改后需要重启才能生效」的项：`config.Redis.*`、`panel.login.host`、`panel.login.port`、`xiuxian.setting.priority`、`xiuxian.setting.cronBackup`、`xiuxian.setting.forceSharp` | 需要 |
+| 面板上标着「修改后需要重启才能生效」的项：`config.Redis.*`、`panel.login.host`、`panel.login.port`、`panel.login.trustProxy`、`xiuxian.setting.priority`、`xiuxian.setting.cronBackup`、`xiuxian.setting.forceSharp` | 需要 |
 | 其余配置项 | 不需要：保存即写入 YAML 并刷新缓存，下次触发指令就生效 |
-| 面版密码 | 不需要，立即生效（已经登录的 token 不会被踢下线） |
+| 面版密码 | 不需要，立即生效；已经登录的 token 不会被踢下线，但它最长 7 天后会自动过期 |
 
 ## 相关链接
 

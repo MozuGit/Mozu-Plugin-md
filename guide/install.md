@@ -10,7 +10,7 @@
 | pnpm | 可用 | README 给出的依赖安装命令是 `pnpm install` |
 | Redis | 可连接，默认 `127.0.0.1:6379` 的 0 号库 | `lib/Redis.js` 在模块加载时就会创建 ioredis 客户端；发言统计、修仙数据、QQBot 接口缓存、内置管理台都读写 Redis |
 | QQBot 适配器 | 想用修仙、QQBot 接口功能时必需 | 修仙主指令、`修仙帮助`、备份还原、QQBot 接口在代码里都限定了 `['QQBot'].includes(e.bot.adapter.name)`，其他适配器下这些功能直接不响应 |
-| Node.js | 支持 ESM 与顶层 `await` | 插件是 `"type": "module"`，`index.js` 里用了顶层 `await import(...)`；`package.json` 未声明 `engines`，跟随云崽的运行环境即可 |
+| Node.js | **≥ 21** | 插件是 `"type": "module"`，`index.js` 里用了顶层 `await import(...)`；`package.json` 已声明 `"engines": { "node": ">=21" }`，低于 21 的版本不在支持范围内 |
 | 锅巴面板 | 可选 | 只有想用图形界面改配置才需要，见文末 |
 
 ## 安装步骤

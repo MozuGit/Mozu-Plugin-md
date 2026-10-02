@@ -119,16 +119,16 @@ netstat -ano | findstr :11451    # Windows：找到 PID 后 taskkill /PID <pid> 
 lsof -i:11451                    # Linux
 ```
 
-或者改 `config/panel/config/login.yaml` 的 `port` 再重启（`host`、`port` 改动都需要重启才生效）。
+或者改 `config/panel/config/login.yaml` 的 `port` 再重启（`host`、`port`、`trustProxy` 改动都需要重启才生效）。
 
 **其它打不开的情况**：
 
 - 端口号非法时日志是 `[魔族陌面版] 端口配置无效：<值>，面版未启动`，检查 `port` 是不是 1–65535 的整数。
 - `host` 为默认的 `auto` 时，外网地址靠请求 <http://v4.ip.zxinc.org/info.php?type=json> 探测本机公网 IP（结果在 Redis 缓存 24 小时），探测失败会显示成 `localhost`。先用本机地址 `http://127.0.0.1:11451` 验证服务本身是否正常，再排查防火墙 / 安全组。
-- Redis 不可用时管理台也可能起不来：启动流程里第一步就是读 Redis 取公网 IP 缓存，这一步失败会被 `index.js` 捕获成 `[魔族陌面版] 服务器启动失败：`。
+- Redis 不可用时管理台**仍能启动**：读公网 IP 缓存那一步现在带 3 秒超时（探测公网 IP 带 5 秒超时），失败只打一条 `[魔族陌面版] 读取缓存外网地址失败` / `获取外网地址失败` 的警告并返回 `false`，不会再拖住启动；启动横幅里的外网地址会退化成 `localhost`。
 
 ::: warning 默认没有密码
-`config/panel/default/login.yaml` 里 `password: ""`、`totp.enabled: false`。端口开在 `0.0.0.0` 上时，只要公网能访问就等于谁都能进。部署到公网前务必看[部署与安全](/webui/security)。
+`config/panel/default/login.yaml` 里 `password: ""`、`totp.enabled: false`、`trustProxy: false`。端口开在 `0.0.0.0` 上时，只要公网能访问就等于谁都能进；`trustProxy` 保持默认又挂了反代的话，登录限流会把所有访客算成同一个 IP。部署到公网前务必看[部署与安全](/webui/security)。
 :::
 :::
 
@@ -178,7 +178,7 @@ lsof -i:11451                    # Linux
 
 ```text
 #修仙备份还原
-#修仙备份还原 2026-01-01_08:00
+#修仙备份还原 2026-01-01_08-00
 ```
 
 不带文件名时会列出 `backup/xiuxian/` 下的可还原文件（带点击按钮）。备份是 `scripts/backup.js` 用 `Redis.scanStream` 扫 `Mozu:xiuxian:*` 写出的 JSON 数组，可以直接用文本方式核对内容。定时备份默认开启，cron 为 `0 0 * * * *`（六段式，每小时整点），文件上限由 `maxBackupFile` 控制，默认保留 10 个。

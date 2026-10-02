@@ -23,7 +23,7 @@ Mozu-Plugin/
 ├── config/                # 四个配置组：config / example / panel / xiuxian
 │   ├── config/default/    # 通用配置默认值（Redis / interface / openai）
 │   ├── example/default/   # 示例模块默认值（fayan / like / makeMessage）
-│   ├── panel/default/     # 管理台配置（login.yaml：地址、端口、密码、TOTP）
+│   ├── panel/default/     # 管理台配置（login.yaml：地址、端口、密码、TOTP、trustProxy）
 │   └── xiuxian/default/   # 修仙数据 8 个 yaml
 ├── guoba/
 │   ├── schemas/           # 锅巴面板表单 schema，一个功能一个文件
@@ -33,6 +33,7 @@ Mozu-Plugin/
 ├── lib/
 │   ├── protocol.js        # mqqapi / laTex / qagent 协议文本工具
 │   ├── Redis.js           # ioredis 单例
+│   ├── panelAuth.js       # 管理台登录令牌：TTL、限流阈值、Bearer 解析
 │   └── TwoFactorAuth.js   # TOTP 双因素认证
 ├── model/
 │   ├── Config/
@@ -129,7 +130,8 @@ Mozu-Plugin/
 | 文件 | 说明 |
 | --- | --- |
 | `protocol.js` | 导出 `mqqapi`（生成 `mqqapi://aio/inlinecmd` 点击指令文本）、`laTex`（彩色文本）、`qagent`（@ 某人）。`forceSharp` 开启时会给按钮与帮助文本里的指令加 `/` 前缀（云崽会把 `/` 自动转换成 `#`） |
-| `Redis.js` | 用 `config/config/*/Redis.yaml` 里的 host / port / database 等参数创建 ioredis 实例并默认导出 |
+| `Redis.js` | 用 `config/config/*/Redis.yaml` 里的 host / port / database 等参数创建 ioredis 实例并默认导出，并挂了一个 `error` 事件监听，把连接错误打成 `[Mozu-Plugin][Redis] <原因>` |
+| `panelAuth.js` | 管理台登录令牌的唯一出处：`TOKEN_TTL`（7 天）、`MAX_PASSWORD_ATTEMPTS`（10）、`MAX_CODE_ATTEMPTS`（5）、`tokenKey()`（Redis 键 `Mozu:panel:token:<token>`）、`getBearerToken()`、`isTokenValid()`、`revokeToken()` |
 | `TwoFactorAuth.js` | 基于 speakeasy 的 TOTP：`generateSecret()` 生成密钥与 otpauth 链接，`verifyToken()` 校验验证码 |
 
 ## model/ —— 业务逻辑
@@ -153,7 +155,7 @@ Mozu-Plugin/
 | --- | --- |
 | `config/config/default/` | `Redis.yaml`、`interface.yaml`、`openai.yaml` |
 | `config/example/default/` | `fayan.yaml`、`like.yaml`、`makeMessage.yaml` |
-| `config/panel/default/` | `login.yaml`：管理台 `host`、`port`、`password`、`totp` |
+| `config/panel/default/` | `login.yaml`：管理台 `host`、`port`、`password`、`totp`、`trustProxy` |
 | `config/xiuxian/default/` | 修仙 8 个数据文件，详见 [修仙数据扩展](/develop/xiuxian-data) |
 
 ::: warning 不要直接改 default

@@ -241,7 +241,8 @@ interval: 200
 | `port` | `11451` | 管理台监听端口 |
 | `password` | `""` | 管理台登录密码，默认是空值（空值无法登录，必须先设一个）。明文或 SHA-256 十六进制串都可以，面板保存时会自动摘要后再写入 |
 | `totp.enabled` | `false` | 是否启用两步验证 |
-| `totp.secret` | `""` | TOTP 密钥（Base32） |
+| `totp.secret` | `""` | TOTP 密钥（Base32），不会回显到锅巴面板与任何前端接口 |
+| `trustProxy` | `false` | 反向代理 / CDN 信任设置，决定 `req.ip` 怎么解析、登录限流按哪个 IP 记账：`false` 直连暴露 / `1` 一层反代 / `2` CDN+反代 / `true` 完全信任头（**改后需重启**，详见 [部署与安全](/webui/security)） |
 
 账号密码与两步验证的做法见 [部署与安全](/webui/security)。
 
@@ -250,7 +251,7 @@ interval: 200
 1. **缩进只用空格**：一级 2 个空格，不要用 Tab；层级错了插件会读到 `{}` 或直接报「读取配置文件失败」。
 2. **编码固定 UTF-8**：Windows 记事本另存时选 UTF-8（无 BOM），不要存成 GBK，否则中文境界名、妖兽名会变乱码。
 3. **含特殊字符的值要加引号**：例如 `powerFormula: "realm / 10 * cult / 100"`、含 `#` 或 `:` 的文本，不加引号会被当作注释或键值分隔符。
-4. **改完重启**：`Redis.yaml`、`setting.yaml` 的 `priority` / `forceSharp` / `cronBackup`、`login.yaml` 的 `host` / `port` 都属于「修改后需要重启才能生效」；其余数值与数据类改动保存后即时生效。这次 `fayan.yaml` / `makeMessage.yaml` 换了目录（`config/config/` → `config/example/`）属于文件搬迁，插件本身不需要重启，但旧路径下的文件不会被读取，自定义值要手动搬到新目录。
+4. **改完重启**：`Redis.yaml`、`setting.yaml` 的 `priority` / `forceSharp` / `cronBackup`、`login.yaml` 的 `host` / `port` / `trustProxy` 都属于「修改后需要重启才能生效」；其余数值与数据类改动保存后即时生效。这次 `fayan.yaml` / `makeMessage.yaml` 换了目录（`config/config/` → `config/example/`）属于文件搬迁，插件本身不需要重启，但旧路径下的文件不会被读取，自定义值要手动搬到新目录。
 5. **别改坏数据结构**：数组项必须有 `-`；`Realms` 必须按境界从低到高；`pills` / `arts` 的 `id` 必须唯一；`root_drop` 四项之和必须为 100；`sect_level` 一行一级，删行会改变宗门等级总数。
 6. **先备份**：直接把 `config/xiuxian/config/` 整个复制一份再改。注意指令与管理台里的「修仙备份」备份的是 Redis 里的 `Mozu:xiuxian:*` 数据（玩家、宗门、兑换码等），**不包含这些 YAML 文件**。
 7. **能用面板就别手写**：锅巴面板与管理台的修仙配置页在保存前会做 ID 重复、概率总和等校验，手写则没有任何校验。

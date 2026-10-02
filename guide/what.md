@@ -63,7 +63,7 @@
 | pnpm | README 给出的依赖安装方式就是 `pnpm install` |
 | Redis | `lib/Redis.js` 在模块加载时创建 ioredis 客户端，默认连 `127.0.0.1:6379` 的 0 号库。发言统计、修仙数据、QQBot 接口缓存、内置管理台都依赖 Redis |
 | QQBot 适配器 | 修仙全套指令、`修仙帮助`、备份还原、QQBot 接口都限定了 `['QQBot'].includes(e.bot.adapter.name)`，其他适配器下这些功能不会响应 |
-| 现代 Node | 插件是纯 ESM（`"type": "module"`），`index.js` 里用了顶层 `await import(...)`；`package.json` 未声明 `engines` |
+| Node.js ≥ 21 | 插件是纯 ESM（`"type": "module"`），`index.js` 里用了顶层 `await import(...)`；`package.json` 现在声明了 `"engines": { "node": ">=21" }` |
 | 锅巴面板（可选） | 想用图形界面改配置才需要，安装方式见<https://github.com/guoba-yunzai/guoba-plugin> |
 
 ## 许可与免责

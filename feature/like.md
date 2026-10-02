@@ -89,7 +89,7 @@ targets:
   - 987654321
 ```
 
-面板上这一项用的是 `GSelectGroup` 选择器组件，而源码把数组里的每一项直接当作 QQ 号传给 `send_like` 的 `user_id`。由于选择器用途与代码读取方式并不一致，**建议直接在 `config/example/config/like.yaml` 里手填 QQ 号**，填完确认数组里存的是号码。
+面板上这一项用的是 `GSelectFriend` 好友选择器，选出来的值就是 QQ 号，与源码的读法一致——源码把数组里的每一项直接当作 QQ 号传给 `send_like` 的 `user_id`。（1.3.0 起该字段由 `GSelectGroup` 群选择器改为 `GSelectFriend`，选择器用途与代码读法不再打架；选不到的好友仍然可以直接在 `config/example/config/like.yaml` 里手填。）
 
 ### 会不会被限流
 

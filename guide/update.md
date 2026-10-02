@@ -41,7 +41,7 @@ GitHub 拉不动就先换 `origin` 再拉，具体命令见[安装](/guide/insta
 
 ::: warning 哪些改动需要重启
 配置文件的**数值**改动是热生效的（`model/Config/Config.js` 用 chokidar 监听 YAML 文件变化）。
-但下面这几项在锅巴面板的说明里都标了「修改后需要重启才能生效」：Redis 连接配置、管理台 `host`/`port`、修仙指令优先级、修仙定时备份 cron、修仙 `forceSharp`。
+但下面这几项在锅巴面板的说明里都标了「修改后需要重启才能生效」：Redis 连接配置、管理台 `host`/`port`/`trustProxy`、修仙指令优先级、修仙定时备份 cron、修仙 `forceSharp`。
 插件代码本身（`apps/`、`model/`）更新后也必须重启。
 :::
 
@@ -81,7 +81,7 @@ GitHub 拉不动就先换 `origin` 再拉，具体命令见[安装](/guide/insta
 | `Mozu:msg:*`、`Mozu:username` | 发言统计的日/周/月榜数据与昵称缓存 |
 | `Mozu:groupinfo:*`、`Mozu:groupbotstate:*` | QQBot 接口缓存的群信息与机器人状态（带 1 小时过期） |
 | `Mozu:remote-ip` | 管理台探测到的公网 IP 缓存（24 小时过期） |
-| `Mozu:panel:*` | 管理台登录令牌、改密码用的验证码、TOTP 临时密钥等（验证码是打印在云崽日志里的，不走短信/邮件） |
+| `Mozu:panel:*` | 管理台登录令牌（`Mozu:panel:token:<token>`，每个键 7 天过期）、改密码用的验证码与尝试次数、登录限流计数等（验证码是打印在云崽日志里的，不走短信/邮件） |
 
 配置文件（`config/config/config/`、`config/xiuxian/config/`、`config/panel/config/`）和备份文件都在插件目录内，跟着第 2 步一起删除。
 
@@ -91,7 +91,7 @@ GitHub 拉不动就先换 `origin` 再拉，具体命令见[安装](/guide/insta
 
 | 指令 | 说明 | 权限 |
 | --- | --- | --- |
-| `#修仙备份` / `#修仙备份 <文件名>` | 把 `Mozu:xiuxian:*` 全部键导出成 `backup/xiuxian/<文件名或时间戳>.json`，不写文件名就用 `年-月-日_时:分` | 主人 + `QQBot` 适配器 + 修仙开关打开 + 群黑白名单通过 |
+| `#修仙备份` / `#修仙备份 <文件名>` | 把 `Mozu:xiuxian:*` 全部键导出成 `backup/xiuxian/<文件名或时间戳>.json`，不写文件名就用 `年-月-日_时-分`（分隔符是短横，避免冒号在 Windows 文件名里非法）；自定义文件名会先经过 `safeBackupName()` 清洗 | 主人 + `QQBot` 适配器 + 修仙开关打开 + 群黑白名单通过 |
 | `#修仙备份还原` | 不带文件名时列出可还原的备份（带点击按钮） | 同上 |
 | `#修仙备份还原 <文件名>` | 用指定文件还原，走全量还原：`Mozu:xiuxian:*` 中不在备份里的键会被清理 | 同上 |
 
@@ -99,6 +99,7 @@ GitHub 拉不动就先换 `origin` 再拉，具体命令见[安装](/guide/insta
 
 - **定时备份**：`apps/xiuxian/backup.js` 注册了一条 task，cron 取自 `Config.xiuxian.setting.cronBackup`，默认值 `0 0 * * * *`（六段式：秒 分 时 日 月 周，即每小时整点）。执行成功会打印 `[魔族陌修仙] 定时备份成功`。
 - **文件上限**：`Config.xiuxian.setting.maxBackupFile` 默认 `10`，超出的旧备份会被自动删除。
+- **目录会自动创建**：`backupKeys()` 写出前会 `mkdirSync(path.dirname(outputFile), { recursive: true })`，手工删掉 `backup/` 目录后不需要自己重建，直接发备份指令即可。
 - **备份格式**：`Redis.scanStream` 扫描匹配的键，把 `key / type / ttl / value` 逐条写成 JSON 数组，所以可以直接文本查看。
 - **管理台里也能操作**：管理台的修仙备份页走 `/api/xiuxian/backup?action=getlist|backup|restore|delete`，效果与指令一致。
 - **只处理 `Mozu:` 前缀的键**：`scripts/backup.js` 顶部定义了 `const MOZU_PREFIX = 'Mozu:'` 与 `isMozuKey()` / `isMozuPattern()` 两个校验函数。`backupKeys(pattern, outputFile)` 在 `pattern` 不以 `Mozu:` 开头时打印

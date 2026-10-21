@@ -6,7 +6,7 @@ const SITE_REPO = 'https://github.com/MozuGit/Mozu-Plugin-md'
 export default defineConfig({
   lang: 'zh-CN',
   title: 'Mozu-Plugin',
-  description: '适用于 TRSS-Yunzai 的娱乐功能插件，内置魔族陌修仙、伪造聊天、发言统计与可视化配置面版',
+  description: '适用于 TRSS-Yunzai 的娱乐功能插件，内置魔族陌修仙、群管禁言、伪造聊天、发言统计与可视化配置面版',
 
   base: '/',
   cleanUrls: true,
@@ -22,10 +22,10 @@ export default defineConfig({
     ['link', { rel: 'mask-icon', href: '/Mo.png', color: '#d4a24c' }],
     ['meta', { name: 'theme-color', content: '#d4a24c' }],
     ['meta', { name: 'author', content: 'MozuGit' }],
-    ['meta', { name: 'keywords', content: 'Yunzai,TRSS-Yunzai,Mozu-Plugin,魔族陌,修仙插件,QQ机器人,OneBot' }],
+    ['meta', { name: 'keywords', content: 'Yunzai,TRSS-Yunzai,Mozu-Plugin,魔族陌,修仙插件,群管插件,QQ机器人,OneBot' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:title', content: 'Mozu-Plugin' }],
-    ['meta', { property: 'og:description', content: '适用于 TRSS-Yunzai 的娱乐功能插件：魔族陌修仙、伪造聊天、发言统计、可视化配置面版' }],
+    ['meta', { property: 'og:description', content: '适用于 TRSS-Yunzai 的娱乐功能插件：魔族陌修仙、群管禁言、天选之人、伪造聊天、发言统计、可视化配置面版' }],
     ['meta', { property: 'og:image', content: '/Mo.png' }]
   ],
 
@@ -89,7 +89,7 @@ export default defineConfig({
     },
 
     footer: {
-      message: '基于 GPL-3.0 许可发布 · <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer">闽ICP备2026007389号-1</a>',
+      message: '基于 GPL-3.0 许可发布 · <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer">闽ICP备2026007389号-4</a>',
       copyright: 'Copyright © 2026 <a href="https://github.com/MozuGit" target="_blank" rel="noreferrer">MozuGit</a>'
     },
 
@@ -167,6 +167,8 @@ function sidebar(): DefaultTheme.SidebarItem[] {
         { text: '伪造聊天', link: '/feature/make-message' },
         { text: '发言统计', link: '/feature/fayan' },
         { text: '定时点赞', link: '/feature/like' },
+        { text: '天选之人', link: '/feature/whois' },
+        { text: '群管', link: '/feature/group-admin' },
         { text: 'QQBot 接口', link: '/feature/qqbot-api' }
       ]
     },

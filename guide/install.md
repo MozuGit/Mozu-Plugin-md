@@ -42,6 +42,12 @@ pnpm install
 
 装完重启 Yunzai。首次启动时插件会自动把 `config/*/default/*.yaml` 复制一份到 `config/*/config/*.yaml`，后者才是你实际生效的配置。
 
+::: warning 别删 `public/` 目录
+插件根目录的 `public/` 里放着管理台的字体（`fonts/loli.ttf`，约 10.8 MB）、`Mo.png` 与 `favicon.ico`。构建配置里 `copyPublicDir: false`，这些文件**不会**被复制进 `server/static`，而是由 Express 另挂一个 `express.static` 直接对外提供。
+
+也就是说 `server/static` 已经不是自包含的了：**打包、迁移或做 Docker 镜像时只拷 `server/`，管理台能打开但 logo 破图、字体掉回系统字体、favicon 404**（`express.static` 不校验目录存在，只会静默 404，所以不会报错）。保持 `public/` 与 `server/` 并列即可。
+:::
+
 ## 验证是否安装成功
 
 ### 1. 看启动日志

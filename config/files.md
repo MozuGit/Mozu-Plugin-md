@@ -1,10 +1,10 @@
 # 配置文件说明
 
-Mozu-Plugin 的所有配置都是 YAML 文件，按用途分三层存放：插件通用配置、修仙数据、管理台登录；`config/` 下则按功能拆成四组目录。这页说明每组每个文件管什么、关键字段有哪些，以及手改 YAML 时要注意什么。
+Mozu-Plugin 的所有配置都是 YAML 文件，按用途分成插件通用配置、示例功能、修仙数据、群管、管理台登录五组；`config/` 下对应五组目录。这页说明每组每个文件管什么、关键字段有哪些，以及手改 YAML 时要注意什么。
 
-## 三层目录结构
+## 五组目录结构
 
-`config/` 下按用途分成四组目录：`config/config/`（通用配置）、`config/example/`（示例功能配置）、`config/xiuxian/`（修仙数据）、`config/panel/`（管理台登录）。每组目录里都是 `default/`（模板）+ `config/`（实际生效）两个子目录。
+`config/` 下按用途分成五组目录：`config/config/`（通用配置）、`config/example/`（示例功能配置）、`config/xiuxian/`（修仙数据）、`config/groupAdmin/`（群管）、`config/panel/`（管理台登录）。每组目录里都是 `default/`（模板）+ `config/`（实际生效）两个子目录。
 
 ```text [目录结构]
 Mozu-Plugin/
@@ -19,17 +19,25 @@ Mozu-Plugin/
     │   ├── default/
     │   │   ├── fayan.yaml
     │   │   ├── like.yaml
-    │   │   └── makeMessage.yaml
+    │   │   ├── makeMessage.yaml
+    │   │   └── whois.yaml
     │   └── config/
     ├── xiuxian/              # 三、修仙数据
     │   ├── default/
     │   │   ├── xiuxian.yaml  setting.yaml  Realm.yaml  beast.yaml
     │   │   └── drop.yaml  sect.yaml  title.yaml  sroot.yaml
     │   └── config/
-    └── panel/                # 四、管理台
+    ├── groupAdmin/           # 四、群管
+    │   ├── default/setting.yaml
+    │   └── config/setting.yaml
+    └── panel/                # 五、管理台
         ├── default/login.yaml
         └── config/login.yaml
 ```
+
+::: tip 后两组是后来加的
+`config/groupAdmin/`（群管）与 `config/example/default/whois.yaml`（天选之人）都是 1.3.0 发布之后随新模块一起加进来的。读取顺序由 `model/Config/Config.js` 的 `dirCfgNames` 决定，现在是 `['config', 'xiuxian', 'groupAdmin', 'example', 'panel']`；升级后这些目录会在首次加载时自动从 `default/` 复制出 `config/`。
+:::
 
 ::: warning 1.3.0 起 `fayan.yaml` / `makeMessage.yaml` 换了目录
 这两个文件原先放在 `config/config/default/`，1.3.0 起迁移到 **`config/example/`**，并新增了 `like.yaml`（定时点赞，模板在 `config/example/default/like.yaml`）；`config/config/` 现在只剩 `Redis.yaml`、`interface.yaml`、`openai.yaml`。对应代码里读的是 `Config.example.fayan` / `Config.example.makeMessage` / `Config.example.like`。升级后从旧版本带过来的 `config/config/config/fayan.yaml`、`config/config/config/makeMessage.yaml` 不再被读取——插件会在 `config/example/` 下重新生成一份默认配置，需要把旧文件里的自定义值手动搬过去，再删掉旧文件。
@@ -75,7 +83,7 @@ Redis 连接在插件加载时就建立，`Redis.yaml` 的任何改动都需要�
 
 ## 二、示例功能配置 `config/example/`
 
-这一组管的是伪造聊天、发言统计与定时点赞三个功能，它们的配置文件名与代码里的读取路径都是 `Config.example.*`。
+这一组管的是伪造聊天、发言统计、定时点赞与天选之人四个功能，它们的配置文件名与代码里的读取路径都是 `Config.example.*`。
 
 ### fayan.yaml
 
@@ -132,6 +140,23 @@ interval: 200
 :::
 
 功能用法见 [定时点赞](/feature/like)。
+
+### whois.yaml（天选之人）
+
+```yaml [config/example/default/whois.yaml]
+# 天选之人开关
+enable: true
+
+# 启用发起人增加被选中的概率
+self_add_rate: true
+```
+
+| 字段 | 默认值 | 说明 |
+| --- | --- | --- |
+| `enable` | `true` | 天选之人开关，关闭后 `天选之人` 指令静默返回 |
+| `self_add_rate` | `true` | 打开后发指令的人有约三成概率自己成为「幸运儿」（主人不受影响） |
+
+功能用法见 [天选之人](/feature/whois)。注意这个功能**需要机器人是群管理**，且只在 QQBot 适配器下生效。
 
 ## 三、修仙数据 `config/xiuxian/`
 
@@ -231,7 +256,32 @@ interval: 200
 | `sroot[].level` | `five_elements` | 该灵根所属概率档 |
 | `obtain_sroot_ls` / `wash_sroot_ls` | `100000` / `50000` | 获取灵根 / 洗灵根需要的灵石 |
 
-## 四、管理台登录 `config/panel/`
+## 四、群管 `config/groupAdmin/`
+
+这一组只有 `setting.yaml`，控制「魔族陌:官机群管」模块（`apps/groupAdmin/groupAdmin.js`），代码里读的是 `Config.groupAdmin.setting.*`。
+
+```yaml [config/groupAdmin/default/setting.yaml]
+# 启用群管
+enable: false
+
+# 群管优先级
+priority: 100
+```
+
+| 字段 | 默认值 | 说明 |
+| --- | --- | --- |
+| `enable` | `false` | 群管总开关。**默认关闭**，不打开的话 `#禁言` / `#解禁` / `#解除全部禁言` 都不会响应 |
+| `priority` | `100` | 群管指令优先级，数字越小越先响应（**改后需重启**） |
+
+::: warning 这一组没有锅巴面板
+`guoba/schemas/index.js` 只注册了 9 组 schema，`groupAdmin` 不在其中——**群管的开关只能改 YAML**，锅巴面板里找不到它。改完 `enable` 保存即可生效，改 `priority` 需要重启机器人。
+
+另外它默认是 `false`：装上插件后群管指令是不工作的，想用必须手动打开。
+:::
+
+功能用法见 [群管](/feature/group-admin)。
+
+## 五、管理台登录 `config/panel/`
 
 ### login.yaml
 
@@ -251,7 +301,7 @@ interval: 200
 1. **缩进只用空格**：一级 2 个空格，不要用 Tab；层级错了插件会读到 `{}` 或直接报「读取配置文件失败」。
 2. **编码固定 UTF-8**：Windows 记事本另存时选 UTF-8（无 BOM），不要存成 GBK，否则中文境界名、妖兽名会变乱码。
 3. **含特殊字符的值要加引号**：例如 `powerFormula: "realm / 10 * cult / 100"`、含 `#` 或 `:` 的文本，不加引号会被当作注释或键值分隔符。
-4. **改完重启**：`Redis.yaml`、`setting.yaml` 的 `priority` / `forceSharp` / `cronBackup`、`login.yaml` 的 `host` / `port` / `trustProxy` 都属于「修改后需要重启才能生效」；其余数值与数据类改动保存后即时生效。这次 `fayan.yaml` / `makeMessage.yaml` 换了目录（`config/config/` → `config/example/`）属于文件搬迁，插件本身不需要重启，但旧路径下的文件不会被读取，自定义值要手动搬到新目录。
+4. **改完重启**：`Redis.yaml`、`setting.yaml` 的 `priority` / `forceSharp` / `cronBackup`、`groupAdmin/setting.yaml` 的 `priority`、`login.yaml` 的 `host` / `port` / `trustProxy` 都属于「修改后需要重启才能生效」；其余数值与数据类改动保存后即时生效。`fayan.yaml` / `makeMessage.yaml` 曾在 1.3.0 从 `config/config/` 搬到 `config/example/`，属于文件搬迁，插件本身不需要重启，但旧路径下的文件不会被读取，自定义值要手动搬到新目录。
 5. **别改坏数据结构**：数组项必须有 `-`；`Realms` 必须按境界从低到高；`pills` / `arts` 的 `id` 必须唯一；`root_drop` 四项之和必须为 100；`sect_level` 一行一级，删行会改变宗门等级总数。
 6. **先备份**：直接把 `config/xiuxian/config/` 整个复制一份再改。注意指令与管理台里的「修仙备份」备份的是 Redis 里的 `Mozu:xiuxian:*` 数据（玩家、宗门、兑换码等），**不包含这些 YAML 文件**。
 7. **能用面板就别手写**：锅巴面板与管理台的修仙配置页在保存前会做 ID 重复、概率总和等校验，手写则没有任何校验。
@@ -263,3 +313,5 @@ interval: 200
 - [AI 自动审核](/config/openai)
 - [内置管理台](/webui/)
 - [修仙数据扩展](/develop/xiuxian-data)
+- [群管](/feature/group-admin)
+- [天选之人](/feature/whois)

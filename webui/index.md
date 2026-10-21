@@ -143,17 +143,67 @@ try {
 | `GET/POST /api/xiuxian/backup` | `getlist` / `backup` / `restore` / `delete` |
 | `GET /api/about/getInfo` | 插件版本、作者与最新版本 |
 
+## 界面：琉璃拟态（Liquid Glass）
+
+管理台整体换了一套皮肤，**常驻、没有开关**：所有页面共用同一套玻璃拟态样式，由 `src/styles/liquid-glass.css`（全局样式）与 `src/composables/useGlassPointer.js`（指针高光）提供，在 `src/main.js` 里一次性引入。
+
+能直接看到的变化：
+
+| 变化 | 说明 |
+| --- | --- |
+| 背景 | 原来根布局是一条黄→紫的实色渐变，现在换成固定的「极光」层：五团径向渐变（青 / 紫 / 粉 / 蓝 / 薄荷）+ 56px 细网格 + 三个缓慢漂移的高斯模糊光斑（`lgBlobA/B/C`，26s / 32s / 29s） |
+| 玻璃面板 | 卡片、侧边栏、模态框、下拉框、消息提示都改成半透明白 + `backdrop-filter: blur(18px) saturate(175%)`，分 `.lg-glass`（18px）、`--strong`（30px，侧边栏 / 弹窗 / 登录卡）、`--weak`（不模糊，内层小卡与表头）三档 |
+| 指针高光 | 鼠标移到任意卡片或弹窗上，会有一团 340px 的白色高光跟着光标走（`useGlassPointer()` 写 `--lg-spec-x` / `--lg-spec-y`，用 `requestAnimationFrame` 节流；触屏设备直接跳过） |
+| 扫光与折射 | 悬停时有一道 115° 的白色扫光来回一次（`lgSheen` 2.6s）；登录卡、首页快捷导航、首页统计弹窗还额外叠了一层 SVG `feTurbulence` + `feDisplacementMap` 的真实折射 |
+| 字体 | 全局换成 `public/fonts/loli.ttf`（字体族 `Loli`，按 `font-weight: 100 900` 声明），并通过 Ant Design 的 `token.fontFamily` 把组件内文字也一起覆盖 |
+| 组件重绘 | 表格、输入框、选择器、按钮、标签、抽屉、Tooltip、滚动条等统一改用 `--lg-*` 变量 |
+
+要改配色就动 `liquid-glass.css` 里 `:root` 下的 `--lg-*` 变量，例如 `--lg-brand` / `--lg-brand-deep`（主色 `#667eea` → `#764ba2`）、`--lg-radius`（12px）、`--lg-blur`（18px）、`--lg-saturate`（175%）。
+
+它会按系统设置自动降级，不需要手动处理：
+
+- 系统开了「减少透明效果」（`prefers-reduced-transparency: reduce`）→ 面板换成接近不透明的 `--lg-surface-solid`，模糊与光斑关闭。
+- 系统开了「减少动态效果」（`prefers-reduced-motion: reduce`）→ 动画与悬停位移全部关掉。
+- 浏览器不支持 `backdrop-filter` → 回落到接近不透明的底色。
+- 窄屏（≤768px）→ 模糊半径调小、第三个光斑隐藏、指针高光关闭。
+
+::: warning 字体有 10 MB
+`public/fonts/loli.ttf` 约 **10.8 MB**，由 Express 以默认缓存头（`maxAge: 0`）直接提供，也没有开 gzip（`package.json` 里没有 `compression` 依赖）。所以清空缓存后第一次打开管理台会明显卡一下。`font-display: swap` 只保证文字不长时间空白，并不能减少传输量。
+:::
+
 ## 静态资源与源码
 
-管理台页面**不是**运行时编译的源码，而是构建产物：Express 直接用 `express.static()` 提供 `server/static/`，里面是 `index.html` 与 `assets/`（`index.js`、`index2.js`…、`index.css`、`index.ico`、`index.png` 等）。
+管理台页面**不是**运行时编译的源码，而是构建产物：Express 用 `express.static()` 提供 `server/static/`，里面是 `index.html` 与 `assets/`（`index.js`、`index2.js`…、`index.css`）。
 
-源码在同目录的 `src/` 下：Vue 3 + ant-design-vue + vue-router，入口 `src/main.js`，壳组件 `src/App.vue`，页面在 `src/views/`。
+除此之外还有**第二个静态目录** `public/`：
+
+```js
+app.use(express.static(path.join(__dirname, 'static')))
+app.use(express.static(path.join(__dirname, '..', 'public')))
+```
+
+| 资源 | 浏览器地址 | 实际文件 |
+| --- | --- | --- |
+| 字体 | `http://<主机>:11451/fonts/loli.ttf` | `<插件>/public/fonts/loli.ttf` |
+| 图标 | `http://<主机>:11451/Mo.png` | `<插件>/public/Mo.png` |
+| favicon | `http://<主机>:11451/favicon.ico` | `<插件>/public/favicon.ico` |
+
+::: danger 别再只拷 `server/` 目录
+`vite.config.js` 现在设了 `copyPublicDir: false`，构建时**不会**把 `public/` 复制进 `server/static`。所以 `server/static` 已经不再是自包含的：只拷 `server/` 能正常启动，但字体、图标、favicon 全部 404（`express.static` 不校验目录是否存在，只会静默 404），表现为页面掉回系统字体、logo 变破图、标签页没图标。
+
+部署或打包时请把 `public/` 一起带上，保持 `<插件>/public/…` 与 `server/` 并列。
+:::
+
+源码在 `src/` 下：Vue 3 + ant-design-vue + vue-router，入口 `src/main.js`，壳组件 `src/App.vue`，页面在 `src/views/`。
 
 | 位置 | 内容 |
 | --- | --- |
 | `src/` | 前端源码（改这里） |
+| `src/styles/liquid-glass.css` | 全局主题样式（玻璃拟态 + Ant Design 重绘） |
+| `src/composables/useGlassPointer.js` | 指针跟随高光的组合式函数 |
 | `server/static/` | 构建产物（浏览器实际加载的文件） |
-| `vite.config.js` | 构建配置：`outDir: 'server/static'`，输出文件名统一走 `assets/index.*` |
+| `public/` | 不参与打包的静态资源：字体、`Mo.png`、`favicon.ico` |
+| `vite.config.js` | 构建配置：`outDir: 'server/static'`、`copyPublicDir: false`，输出文件名统一走 `assets/index.*` |
 | `package.json` 的 `scripts.build` | `vite build` |
 
 要重新构建前端，在插件目录执行：
@@ -162,7 +212,7 @@ try {
 pnpm build
 ```
 
-它会按 `vite.config.js` 把产物写到 `server/static/`。构建完刷新浏览器即可看到新页面，**不需要重启机器人**（静态文件是每次请求实时读盘的）。
+它会按 `vite.config.js` 把产物写到 `server/static/`（不会碰 `public/`）。构建完刷新浏览器即可看到新页面，**不需要重启机器人**（静态文件是每次请求实时读盘的）。
 
 ::: info 只改配置不用构建
 管理台的页面结构是固定的，日常改数值、开关、发兑换码都不需要动前端；只有改 `src/` 下的页面代码才需要重新 `pnpm build`。

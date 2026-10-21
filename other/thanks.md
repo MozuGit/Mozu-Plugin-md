@@ -9,6 +9,7 @@ Mozu-Plugin 能跑起来、能配得舒服、能被你看到这份文档，靠�
 | [Guoba-Plugin（锅巴面板）](https://github.com/guoba-yunzai/guoba-plugin) | 插件的配置面板建立在锅巴的 schema 机制上：`guoba.support.js` 暴露 `supportGuoba()`，`guoba/schemas/` 下每个功能一个表单定义，修仙开关、秘境、丹药、灵根概率都能在面板里点几下改完。 |
 | [TRSS-Yunzai](https://github.com/TimeRainStarSky/Yunzai) | 本插件的运行框架。插件按 Yunzai 的 `plugin` 规范编写（`apps/` 下继承 `plugin`、声明 `rule` 与 `task`），消息收发、消息段、定时任务、主人权限都来自框架；更新功能也直接复用框架的更新模块（`apps/update.js` 会动态载入 `other/update.js` / `system/apps/update.ts`）。 |
 | [QQBot-Plugin](https://github.com/taohyc/QQBot-Plugin) | 本插件依赖的 **QQBot 适配器**由它提供（仓库自述：云崽 QQ 机器人适配器）。修仙、备份等指令的准入判断 `['QQBot'].includes(e?.bot?.adapter?.name)` 里的适配器名 `QQBot` 即来自这个插件；`lib/protocol.js` 里的 `mqqapi`（行内指令）、`laTex`（彩色文本）、`qagent`（用户卡片）三种文本协议，也都是在 QQ 开放平台机器人的 Markdown 能力上拼出来的，只有在这个适配器下才有效。 |
+| [yenai-plugin](https://gitee.com/yeyang52/yenai-plugin) | 群管解析禁言时长用的中文数字转换（`tools/translateChinaNum.js`）直接取自这个项目，**未做修改**，文件头保留了原版权声明。 |
 | meme-plugin | **原链接已失效**，因此这里只能致谢、无法给出链接。如果你知道它的现址，欢迎提 Issue 补充。 |
 
 ## 插件用到的开源库
@@ -35,7 +36,7 @@ Mozu-Plugin 能跑起来、能配得舒服、能被你看到这份文档，靠�
 
 ## 参考资料
 
-- [QQ 机器人官方文档](https://bot.q.qq.com/wiki/develop/api-v2/autogen/api/v2_groups_group_openid_info.get.html) —— `apps/interface.js` 里补充的群信息、禁言、入群申请等接口，字段与调用方式都对着这份文档写。
+- [QQ 机器人官方文档](https://bot.q.qq.com/wiki/develop/api-v2/autogen/) —— `model/QQBot/interface.js` 里补充的群信息、禁言（`restrict_chat_setting`）、入群申请等接口，字段与调用方式都对着这份文档写。
 
 ## 怎么回馈这些项目
 

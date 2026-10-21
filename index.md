@@ -4,7 +4,7 @@ layout: home
 hero:
   name: Mozu-Plugin
   text: 适用于 TRSS-Yunzai 的娱乐功能插件
-  tagline: 魔族陌修仙、伪造聊天、发言统计等功能
+  tagline: 魔族陌修仙、群管、伪造聊天、发言统计等功能
   image:
     src: /Mo.png
     alt: Mozu-Plugin
@@ -22,10 +22,10 @@ hero:
 features:
   - icon: 🎮
     title: 玩法丰富
-    details: 魔族陌修仙（境界 · 宗门 · 妖兽 · 秘境 · 兑换码）、伪造聊天、发言统计、定时点赞、QQBot 接口扩展，开箱即用的群聊娱乐全家桶。
+    details: 魔族陌修仙（境界 · 宗门 · 妖兽 · 秘境 · 兑换码）、群管禁言、天选之人、伪造聊天、发言统计、定时点赞、QQBot 接口扩展，开箱即用的群聊娱乐全家桶。
   - icon: 🧩
     title: 可视化配置
-    details: 支持锅巴面板一键配置所有开关，插件自带 Vue3 + Ant Design Vue 管理台，修仙玩家、宗门、CDK 与备份均可在线管理。
+    details: 支持锅巴面板一键配置所有开关，插件自带 Vue3 + Ant Design Vue 管理台，琉璃拟态（Liquid Glass）界面，修仙玩家、宗门、CDK 与备份均可在线管理。
   - icon: ⚡
     title: 轻量易装
     details: 克隆 + 安装依赖两条命令即可跑起来，提供 GitHub / Gitee / GitCode 多源加速，机器人内一条指令完成热更新。

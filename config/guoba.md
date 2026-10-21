@@ -12,9 +12,9 @@ Mozu-Plugin 只提供「接入面板」所需的几个文件，不包含锅巴�
 | --- | --- |
 | `guoba.support.js` | 插件根目录的入口，只有一行：`export { supportGuoba } from "./guoba/index.js"`，锅巴靠它识别本插件 |
 | `guoba/index.js` | `supportGuoba()` 返回 `{ pluginInfo, configInfo }` 两个对象 |
-| `guoba/pluginInfo.js` | 面板卡片信息：`name`、`title`（魔族陌插件（Mozu-Plugin））、`author`、`authorLink`、`link`、`description`、`iconPath`（插件目录下的 `Mo.png`）、`isV3: true` |
+| `guoba/pluginInfo.js` | 面板卡片信息：`name`、`title`（魔族陌插件（Mozu-Plugin））、`author`、`authorLink`、`link`、`description`、`iconPath`（`public/Mo.png`）、`isV3: true` |
 | `guoba/configInfo.js` | 向面板暴露 `schemas`、`actions`、`getConfigData`、`setConfigData` |
-| `guoba/schemas/index.js` | 汇总 8 个分组 schema，并实现配置的读取、保存与校验 |
+| `guoba/schemas/index.js` | 汇总 9 个分组 schema，并实现配置的读取、保存与校验 |
 
 读取：`getConfigData()` 返回插件的全量配置，但会把 `panel.login.password` 与 `panel.login.totp.secret` 一起置空——**面版密码与 TOTP 密钥都不会回显到前端**（`config.openai.apiKey` 之类的字段仍会回显，见 [AI 自动审核](/config/openai)）。
 
@@ -30,8 +30,13 @@ Mozu-Plugin 只提供「接入面板」所需的几个文件，不包含锅巴�
 | `伪造聊天` | `guoba/schemas/makeMessage.js` | `example.makeMessage.enable` / `onlyMaster` / `whiteQQList` / `repeatCount` |
 | `发言统计` | `guoba/schemas/fayan.js` | `example.fayan.enable` / `sendMarkdown` / `count` |
 | `定时点赞` | `guoba/schemas/like.js` | `example.like.enable` / `cron` / `targets` / `batchCount` / `times` / `interval` |
+| `天选之人` | `guoba/schemas/whois.js` | `example.whois.enable` / `self_add_rate` |
 | `OpenAI` | `guoba/schemas/openai.js` | `config.openai.baseURL` / `model` / `apiKey` |
 | `Interface` | `guoba/schemas/interface.js` | `config.interface.enable` |
+
+::: warning 群管不在面板里
+`config/groupAdmin/`（群管）**没有对应的 schema**，面板上找不到「群管」分组。要开群管只能手改 `config/groupAdmin/config/setting.yaml`，详见 [配置文件说明](/config/files)。
+:::
 
 ## Redis配置
 
@@ -143,6 +148,15 @@ Mozu-Plugin 只提供「接入面板」所需的几个文件，不包含锅巴�
 
 字段默认值见 [配置文件说明](/config/files)，功能用法见 [定时点赞](/feature/like)。
 
+## 天选之人
+
+| 字段 | 面板名称 | 含义 |
+| --- | --- | --- |
+| `example.whois.enable` | 天选之人开关 | 是否允许 `天选之人` 指令随机禁言一个人，默认开 |
+| `example.whois.self_add_rate` | 发起人概率 | 打开后发指令的人有约三成概率自己成为「幸运儿」（主人不受影响） |
+
+功能用法见 [天选之人](/feature/whois)。注意它**需要机器人是群管理**，且只在 QQBot 适配器下生效。
+
 ## OpenAI
 
 | 字段 | 面板名称 | 含义 |
@@ -169,6 +183,7 @@ Mozu-Plugin 只提供「接入面板」所需的几个文件，不包含锅巴�
 | `example.makeMessage.*` | `config/example/config/makeMessage.yaml` |
 | `example.fayan.*` | `config/example/config/fayan.yaml` |
 | `example.like.*` | `config/example/config/like.yaml` |
+| `example.whois.*` | `config/example/config/whois.yaml` |
 | `config.openai.*` | `config/config/config/openai.yaml` |
 | `config.interface.*` | `config/config/config/interface.yaml` |
 | `panel.login.*` | `config/panel/config/login.yaml` |

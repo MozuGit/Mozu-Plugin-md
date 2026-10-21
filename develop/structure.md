@@ -12,7 +12,10 @@ Mozu-Plugin/
 │   ├── example/           # 官方示例模块（同样会被加载）
 │   │   ├── fayan.js       # 魔族陌:发言统计
 │   │   ├── like.js        # 魔族陌:定时点赞（只有 task，没有 rule）
-│   │   └── makeMessage.js # 魔族陌:伪造聊天
+│   │   ├── makeMessage.js # 魔族陌:伪造聊天
+│   │   └── whois.js       # 天选之人（随机禁言一个人）
+│   ├── groupAdmin/
+│   │   └── groupAdmin.js  # 魔族陌:官机群管（禁言 / 解禁 / 解除全部禁言）
 │   ├── xiuxian/
 │   │   ├── backup.js      # 魔族陌:修仙备份（含定时备份 task）
 │   │   ├── help.js        # 魔族陌:修仙帮助
@@ -20,9 +23,10 @@ Mozu-Plugin/
 │   │   └── xiuxian.js     # 魔族陌:修仙主入口
 │   ├── interface.js       # MozuInterface：QQBot 接口扩展
 │   └── update.js          # 魔族陌:更新插件
-├── config/                # 四个配置组：config / example / panel / xiuxian
+├── config/                # 五个配置组：config / example / groupAdmin / panel / xiuxian
 │   ├── config/default/    # 通用配置默认值（Redis / interface / openai）
-│   ├── example/default/   # 示例模块默认值（fayan / like / makeMessage）
+│   ├── example/default/   # 示例模块默认值（fayan / like / makeMessage / whois）
+│   ├── groupAdmin/default/# 群管配置（setting.yaml：enable / priority）
 │   ├── panel/default/     # 管理台配置（login.yaml：地址、端口、密码、TOTP、trustProxy）
 │   └── xiuxian/default/   # 修仙数据 8 个 yaml
 ├── guoba/
@@ -40,7 +44,12 @@ Mozu-Plugin/
 │   │   ├── Config.js      # 配置读取/写入 + 文件监听
 │   │   ├── Version.js     # 路径、插件名、版本号
 │   │   └── YamlReader.js  # yaml 解析与回写
+│   ├── QQBot/
+│   │   └── interface.js   # QQBotApi：群信息 / 禁言 / 入群申请的直连封装
 │   ├── ai/openai.js       # AI 文本审核
+│   ├── groupAdmin/
+│   │   ├── common.js      # checkPermission()：操作者 / 机器人权限校验
+│   │   └── groupAdmin.js  # 禁言列表读取与批量禁言
 │   └── xiuxian/
 │       ├── xiuxian.js     # 修仙核心逻辑
 │       ├── button.js      # 按钮生成
@@ -50,6 +59,8 @@ Mozu-Plugin/
 │       └── tools/
 │           ├── notify.js       # 宗门名称/简介审核通知（私聊主人）
 │           └── xiuxianText.js  # 指令文案与回复拼装
+├── public/                # 不参与打包的静态资源（字体 / Mo.png / favicon.ico）
+│   └── fonts/loli.ttf     # 管理台全局字体（约 10.8 MB）
 ├── scripts/backup.js      # 离线 Redis 备份 / 还原脚本
 ├── server/
 │   ├── index.js           # Express 入口（监听 0.0.0.0，端口取自 login.yaml）
@@ -57,6 +68,10 @@ Mozu-Plugin/
 │   ├── controllers/       # 路由对应的业务实现
 │   └── static/            # 【构建产物目录】Vue3 管理台打包输出
 ├── src/                   # Vue3 管理台源码（App.vue / main.js / router / views）
+│   ├── composables/       # 组合式函数（useGlassPointer：卡片指针高光）
+│   └── styles/            # 全局样式（liquid-glass.css：玻璃拟态主题）
+├── tools/
+│   └── translateChinaNum.js # 中文数字转阿拉伯数字（群管解析禁言时长）
 ├── guoba.support.js       # 锅巴面板对接入口
 ├── index.html             # 管理台 HTML 模板
 ├── index.js               # 插件入口
@@ -73,8 +88,9 @@ Mozu-Plugin/
 | `index.html` | 管理台的 HTML 模板，标题为「魔族陌 - MozuAdmin」 |
 | `vite.config.js` | 管理台构建配置，产物固定输出到 `server/static` |
 | `package.json` | 依赖清单、`version` 版本号、`imports` 别名 |
+| `public/` | 不参与打包的静态资源：`Mo.png`、`favicon.ico`、`fonts/loli.ttf`。由 `server/index.js` 另挂一个 `express.static` 对外提供，**必须与 `server/` 并列存在**（`vite.config.js` 里 `copyPublicDir: false`，构建不会复制它） |
 | `.prettierrc` / `.prettierignore` | 代码格式化配置：无分号、单引号、`printWidth: 120`，提交前可跑 `npx prettier --write .` |
-| `Mo.png` / `LICENSE` / `README.md` | 图标、GPL-3.0-only 许可、项目说明 |
+| `LICENSE` / `README.md` | GPL-3.0-only 许可、项目说明 |
 
 ### 入口 index.js 做了什么
 
@@ -120,6 +136,8 @@ Mozu-Plugin/
 | `apps/example/fayan.js` | 发言统计 |
 | `apps/example/like.js` | 定时点赞：只有 `task`（按 cron 给目标 QQ 点赞），没有 `rule` |
 | `apps/example/makeMessage.js` | 伪造聊天 |
+| `apps/example/whois.js` | 天选之人：随机抽一个群成员禁言几秒（插件名就叫「天选之人」） |
+| `apps/groupAdmin/groupAdmin.js` | 官机群管：`#禁言` / `#解禁` / `#解除全部禁言` |
 
 ::: tip 怎么加新模块
 完整流程见 [新增功能模块](/develop/module)。
@@ -138,23 +156,33 @@ Mozu-Plugin/
 
 | 路径 | 说明 |
 | --- | --- |
-| `Config/Config.js` | 配置中心。启动时把 `config/<目录>/default/*.yaml` 复制到同级的 `config/` 目录，并用 chokidar 监听改动。`dirCfgNames` 目前是 `config`、`xiuxian`、`example`、`panel` 四个目录，可用 `Config.example.fayan`、`Config.xiuxian.setting` 这种「`Config.<组名>.<文件名>`」代理方式直接读某个 yaml |
+| `Config/Config.js` | 配置中心。启动时把 `config/<目录>/default/*.yaml` 复制到同级的 `config/` 目录，并用 chokidar 监听改动。`dirCfgNames` 目前是 `config`、`xiuxian`、`groupAdmin`、`example`、`panel` 五个目录，可用 `Config.example.fayan`、`Config.xiuxian.setting` 这种「`Config.<组名>.<文件名>`」代理方式直接读某个 yaml |
 | `Config/YamlReader.js` | 基于 `yaml` 包的读写封装，提供 `get / set / delete / addIn / jsonData` |
 | `Config/Version.js` | 导出 `Plugin_Path`、`Plugin_Name`、`Plugin_Version`、`Plugin_pkg` |
+| `QQBot/interface.js` | `QQBotApi` 类：把 `GET/POST /v2/groups/{id}/…` 这组请求（群信息、机器人状态、入群申请、禁言列表、禁言）封装成方法。`apps/groupAdmin/` 与 `apps/example/whois.js` 直接 `new` 它，**不受 `config.interface.enable` 影响** |
+| `groupAdmin/common.js` | `checkPermission(e, permission, role, isReply)`：同时校验操作者（主人 / 群主 / 群管）与机器人（是否群管理）权限，失败时直接回复原因 |
+| `groupAdmin/groupAdmin.js` | `GroupAdmin` 类：`getMuteList()` 读群禁言列表、`muteMembers(members)` 批量禁言（`time` 为 0 即解禁） |
 | `ai/openai.js` | `aiAuditText()`：把用户文本丢给 OpenAI 兼容接口判断是否违规 |
 | `xiuxian/xiuxian.js` | 修仙核心：境界突破、修炼开采、闭关、切磋、妖兽、秘境、储物袋、宗门、排行榜等 |
 | `xiuxian/tools/xiuxianText.js` | 指令文案层，按 `commandHandlers` 与 `prefixHandlers` 分发并拼装 Markdown |
 | `xiuxian/button.js` | 拼装各种按钮组 |
 | `xiuxian/help.js` / `RegExp.js` | 指令清单与指令正则 |
 
+## tools/ —— 独立小工具
+
+| 文件 | 说明 |
+| --- | --- |
+| `translateChinaNum.js` | 把中文数字（`十`、`三十`、`一百二十`、`两`…）转成阿拉伯数字，支持 `零一二两三四五六七八九` 与 `十百千万亿`。群管用它解析「禁言多久」。源码取自 [yenai-plugin](https://gitee.com/yeyang52/yenai-plugin)（GPL-3.0，未做修改） |
+
 ## config/ —— 配置与数据
 
-四个子目录结构完全一致：`default/` 是随仓库发布的默认值，`config/` 是运行时自动生成、被 `.gitignore` 忽略的用户配置。读取路径就是 `<组名>.<文件名>`，例如 `Config.example.fayan`。
+五个子目录结构完全一致：`default/` 是随仓库发布的默认值，`config/` 是运行时自动生成、被 `.gitignore` 忽略的用户配置。读取路径就是 `<组名>.<文件名>`，例如 `Config.example.fayan`。
 
 | 目录 | 内容 |
 | --- | --- |
 | `config/config/default/` | `Redis.yaml`、`interface.yaml`、`openai.yaml` |
-| `config/example/default/` | `fayan.yaml`、`like.yaml`、`makeMessage.yaml` |
+| `config/example/default/` | `fayan.yaml`、`like.yaml`、`makeMessage.yaml`、`whois.yaml` |
+| `config/groupAdmin/default/` | `setting.yaml`：群管 `enable`、`priority`（**这一组没有锅巴面板**） |
 | `config/panel/default/` | `login.yaml`：管理台 `host`、`port`、`password`、`totp`、`trustProxy` |
 | `config/xiuxian/default/` | 修仙 8 个数据文件，详见 [修仙数据扩展](/develop/xiuxian-data) |
 
@@ -181,7 +209,7 @@ Mozu-Plugin/
 
 | 路径 | 说明 |
 | --- | --- |
-| `server/index.js` | 创建 Express 实例，挂载 `/api` 路由与静态目录，读取 `login.yaml` 的 `port`（默认 `11451`）后监听 `0.0.0.0`。端口被占用、权限不足等错误会打印排查提示 |
+| `server/index.js` | 创建 Express 实例，挂载 `/api` 路由与**两个**静态目录（`server/static` 与插件根目录的 `public/`），读取 `login.yaml` 的 `port`（默认 `11451`）后监听 `0.0.0.0`。端口被占用、权限不足等错误会打印排查提示 |
 | `server/router/` | `index.js` 汇总，另有 `auth.js`、`about.js`、`xiuxian.js` |
 | `server/controllers/` | `authController`、`aboutController`、`xiuxianController`，真正的业务实现 |
 | `server/static/` | **构建产物目录**，由 `pnpm build` 生成，不用手改 |

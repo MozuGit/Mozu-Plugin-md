@@ -132,6 +132,31 @@ lsof -i:11451                    # Linux
 :::
 :::
 
+::: details 管理台的字体 / logo 显示不出来？
+
+先确认插件目录下的 `public/` 还在，并且与 `server/` 并列：
+
+```text
+Mozu-Plugin/
+├── public/
+│   ├── fonts/loli.ttf     # 管理台字体（约 10.8 MB）
+│   ├── Mo.png             # 侧边栏与登录页的 logo
+│   └── favicon.ico        # 标签页图标
+└── server/
+    └── static/            # 构建产物
+```
+
+`vite.config.js` 设了 `copyPublicDir: false`，所以 `server/static/assets/` 里**已经不再包含**字体与图片；Express 是用另一个 `express.static` 把 `public/` 挂到站点根目录的。把下面三个地址直接丢进浏览器试，404 就说明 `public/` 丢了或位置不对：
+
+- `http://<主机>:11451/fonts/loli.ttf`
+- `http://<主机>:11451/Mo.png`
+- `http://<主机>:11451/favicon.ico`
+
+`express.static` 不会因为目录不存在而报错，只会静默 404，所以启动日志里**看不到任何提示**——表现就是页面用回系统字体、logo 变破图、标签页没图标。
+
+常见诱因：只打包了 `server/`、Docker 里 `COPY` 漏了 `public/`、或者手工把 `public/` 挪进了 `server/`。
+:::
+
 ::: details Redis 连不上怎么办？
 
 相关文件：

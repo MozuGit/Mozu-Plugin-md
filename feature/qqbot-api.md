@@ -56,14 +56,40 @@ README 中写得很直接：
 | `e.group.muteMember(openid, time = 0, obj = [])` | 禁言（或解除禁言）群成员，`time` 单位为秒，`obj` 为可选的额外成员数组 | 通过 `POST /v2/groups/{group_id}/restrict_chat_setting` 实现；只有原本没有该方法时才会挂载 |
 | `e.group.muteMember(openid, 0)` | 解除禁言 | 该项的 `time` 为 `0` 时请求体里的 `op` 为 `del`，否则为 `add` 并按 `+08:00` 计算 `mute_expire_at` |
 | `e.group.muteMember(openid, time, [{ openid, time }])` | 一次处理多个成员 | 第三个参数 `obj` 是额外的 `{ openid, time }` 数组，会与第一个参数合并成待处理列表；某一项没写 `time` 时沿用第二个参数的值、写 `0` 则该项单独解除禁言；内部**每 20 个成员发一次请求**（`for (let i = 0; i < all.length; i += 20)`），任何一批失败就立即返回 `false`，全部成功返回 `true` |
+| `e.group.getGroupMuteList()` | 获取当前群禁言列表 | 通过 `GET /v2/groups/{group_id}/restrict_chat_setting` 实现，返回响应里的 `data`（里面的 `members` 才是列表）；请求失败时返回 `[]` |
 
-请求体结构为 `members: [{ op, member_openid, mute_expire_at }]`，其中 `member_openid` 会去掉 `self_id:` 前缀，`mute_expire_at` 由「当前秒级时间 + `time` + 1 秒」按 `+08:00` 时区生成（`op: 'del'` 时同样会带上这个字段）。请求失败时方法返回 `false`。
+请求体结构为 `members: [{ op, member_openid, mute_expire_at }]`，其中 `member_openid` 会去掉 `self_id:` 前缀，`mute_expire_at` 由「当前秒级时间 + `time` + 1 秒」按 `+08:00` 时区生成；**`op: 'del'`（解禁）时该字段是空字符串 `''`**。请求失败时方法返回 `false`。
+
+也就是说实际禁言时长会比填的多出约 1 秒，这一点在 [群管](/feature/group-admin) 里也一样。
 
 ### 入群申请列表
 
 | 接口 | 用途 | 备注 |
 | --- | --- | --- |
-| `e.group.getJoinList()` | 获取入群申请列表 | 通过 `GET /v2/groups/{group_id}/join_request_list` 实现，返回官方响应里的 `result`；失败时返回 `false` |
+| `e.group.getJoinList()` | 获取入群申请列表 | 通过 `GET /v2/groups/{group_id}/join_request_list` 实现，返回官方响应里的 `result`；失败时返回 `{ list: [], next_cursor: '' }` |
+
+### 底层的 `model/QQBot/interface.js`
+
+上面这些方法不再各自写 `bot.sdk.request`，而是统一委托给 `model/QQBot/interface.js` 里的 `QQBotApi` 类：
+
+```js
+import QQBotApi from '../model/QQBot/interface.js'
+
+const api = new QQBotApi(e)          // 构造时从 e 取 bot 与 group_id
+await api.getGroupInfo()             // GET  /v2/groups/{id}/info
+await api.getGroupBotState()         // GET  /v2/groups/{id}/bot_state
+await api.getGroupJoinList()         // GET  /v2/groups/{id}/join_request_list
+await api.getGroupMuteInfo()         // GET  /v2/groups/{id}/restrict_chat_setting
+await api.muteMember(openid, time)   // POST /v2/groups/{id}/restrict_chat_setting
+```
+
+::: tip 这个类不受 `interface.enable` 限制
+`config.interface.enable` 只控制「往 `e.group` 上挂方法」和「挂 `global.Mozu`」。`apps/groupAdmin/` 与 `apps/example/whois.js` 是**直接 new 这个类** 调接口的，所以即使接口开关是关的，群管与天选之人照样能用。
+
+反过来说：想让**别的插件**用上这些能力，才需要打开 `interface.enable`。
+:::
+
+`getGroupInfo()` / `getGroupBotState()` 失败时返回 `null`（并打一条 `[魔族陌][Interface]` 的错误日志），`getGroupJoinList()` / `getGroupMuteInfo()` 失败时返回空结构而不是 `null`。
 
 ### 群人数自动维护
 
@@ -111,6 +137,10 @@ if (e.group?.muteMember) {
 // 获取入群申请列表
 const joinList = e.group?.getJoinList ? await e.group.getJoinList() : false
 
+// 获取当前群禁言列表（注意列表在 .members 里）
+const muteInfo = e.group?.getGroupMuteList ? await e.group.getGroupMuteList() : []
+const muted = muteInfo?.members ?? []
+
 // 判断机器人在群内是否为管理员
 if (e.group?.is_admin) { /* ... */ }
 ```
@@ -119,9 +149,11 @@ if (e.group?.is_admin) { /* ... */ }
 
 ## 官方文档
 
-接口的字段与返回结构以官方文档为准：<https://bot.q.qq.com/wiki/>。README 中给出的参考链接是官方 API v2 中「获取群 openid 信息」那一节。
+接口的字段与返回结构以官方文档为准：<https://bot.q.qq.com/wiki/>。README 现在给的参考链接是官方 API v2 的自动生成目录：<https://bot.q.qq.com/wiki/develop/api-v2/autogen/>。
 
 ## 相关页面
 
+- [群管](/feature/group-admin)：直接调用 `QQBotApi` 实现的禁言 / 解禁
+- [天选之人](/feature/whois)：同样直接调用 `QQBotApi`
 - [魔族陌修仙](/feature/xiuxian)：大量使用 QQBot 的 Markdown 与按钮能力
 - [锅巴面板配置](/config/guoba)：接口开关的位置与用法

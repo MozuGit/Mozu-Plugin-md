@@ -44,6 +44,63 @@
 2. **挂了反向代理就一定要配 `trustProxy`**，否则登录限流会按代理 IP 记账、形同虚设。做法见 [部署与安全](/webui/security)。
 :::
 
+## 第二批更新（2026-10）
+
+2026-10-03 ~ 10-20 又合入 19 个提交，`package.json` 里的版本号**仍然是 `1.3.0`**。这次的重点是两个新模块和一次管理台换肤。
+
+### 新增：群管
+
+给 QQBot 适配器补上禁言能力的独立模块（`apps/groupAdmin/`），三条指令：`#禁言`、`#解禁`、`#解除全部禁言`。
+
+- 支持一次 @ 多人、中文数字（`十`、`三十`、`一百二十`）以及秒 / 分 / 时 / 天 / 周 / 月 / 年等单位。
+- 需要机器人自身是群管理，发送者需群主 / 群管 / 主人（主人可绕过发送者校验，但绕不过机器人权限）。
+- **默认关闭**：`config/groupAdmin/default/setting.yaml` 里 `enable: false`，而且这一组**没有锅巴面板**，只能手改 YAML。
+- 详见 [群管](/feature/group-admin)。
+
+### 新增：天选之人
+
+一个随机禁言的整活指令（`apps/example/whois.js`，插件名就叫「天选之人」）：`天选之人` 随机抽一个群成员禁言 5～60 秒；`self_add_rate` 打开时发起人有约三成概率自己中招（主人豁免）。
+
+默认**开启**（`example.whois.enable: true`），但同样要求机器人是群管理。详见 [天选之人](/feature/whois)。
+
+### 管理台：琉璃拟态（Liquid Glass）
+
+整个管理台换成玻璃拟态皮肤：极光渐变背景 + 漂移光斑、半透明玻璃面板（`backdrop-filter`）、跟随鼠标的指针高光、扫光与 SVG 折射，并把全局字体换成 `public/fonts/loli.ttf`。**常驻、没有开关**，但会跟随系统的「减少透明 / 减少动效」设置自动降级。
+
+::: danger 这次升级最容易踩的坑：`public/` 变成了必需目录
+`vite.config.js` 新增 `copyPublicDir: false`，`Mo.png` / `favicon.ico` / `fonts/loli.ttf` 全部搬到插件根目录的 `public/`，由 `server/index.js` 里**第二个** `express.static` 对外提供。
+
+后果：`server/static` 不再自包含。**只拷 `server/` 的部署会启动成功，但字体、logo、favicon 全部静默 404**，日志里没有任何提示。打包、迁移、Docker 镜像都要带上 `public/`。
+:::
+
+### 修仙
+
+- `[修复] 切磋 + @ 时会发生随机切磋`：定向切磋的正则从 `^#?切磋\s*\d+` 放宽到 `\d*`，随机切磋则收紧成 `^#?随机切磋$`。**副作用是不带参数的 `切磋` 不再自动转随机**，而是提示「未找到该玩家」——想随机必须发 `随机切磋`。
+- `修仙帮助` 排版微调：四类标题去掉 `>`，改成纯加粗；指令清单改为整体前置 `>`。
+- 备份 / 还原的回复不再可能出现「备份 false 个键」这类文案，失败时会提示去看后台日志。
+- `model/xiuxian/xiuxian.js` 只是把 50 个方法的类实例改成对象字面量，**没有任何行为变化**。
+
+### 伪造聊天
+
+- `伪造复读` 支持 `=img=` 插图，规则与 `伪造聊天` 一致。
+- `伪造复读` 支持用 **@ 指定复读者**：带了 @ 就只让被 @ 的人复读，不再从全群随机抽。
+- 修复了 @ 场景下的异常，并把私聊判断提前。
+
+### 其它
+
+- `model/QQBot/interface.js` 新增 `QQBotApi` 类，把群信息、机器人状态、入群申请、禁言列表与禁言请求统一封装；`apps/interface.js` 改为委托它，并新增 `e.group.getGroupMuteList()`。
+- `tools/translateChinaNum.js` 引入中文数字转换（取自 [yenai-plugin](https://gitee.com/yeyang52/yenai-plugin)，GPL-3.0，未修改）。
+- `lib/protocol.js` 的 `laTex` 默认调色板由 8 个颜色名换成 7 个十六进制值。
+- `guoba/pluginInfo.js` 的 `iconPath` 与 `README` 里的图片路径改为 `public/Mo.png`。
+- `prettier` 升到 `^3.9.10`（仅开发依赖）。
+
+::: tip 这批更新的检查清单
+1. 确认插件目录下的 **`public/`** 还在（与 `server/` 并列）。
+2. 想用群管的话，手改 `config/groupAdmin/config/setting.yaml` 把 `enable` 改成 `true`，再重启。
+3. 群里试一条 `#修仙帮助` 和一条 `切磋 @某人`，确认切磋不再打成随机。
+4. 打开管理台看一眼新界面；字体明显变小 / 变普通就说明 `public/fonts/loli.ttf` 没加载上。
+:::
+
 ## 如何查看自己正在运行的版本
 
 | 方式 | 说明 |

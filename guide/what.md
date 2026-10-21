@@ -27,7 +27,9 @@
 | 伪造聊天 | `apps/example/makeMessage.js` | `#伪造聊天…` 生成合并转发的聊天记录、`#伪造复读 <文本> <次数>` 随机成员复读 | `Config.example.makeMessage.enable`；私聊不支持；`onlyMaster` 可限制为仅主人；在 `QQBot` 适配器下会被直接跳过 |
 | 发言统计 | `apps/example/fayan.js` | `#发言榜` 查日/周/月榜，`#清除发言 @某人`、`#清除本群发言` 清记录 | 需要 Redis；两个清除指令限主人；非 QQBot 走纯文本，QQBot 下可发 Markdown + 按钮 |
 | 定时点赞 | `apps/example/like.js` | 按 cron 定时给 `targets` 里的 QQ 点赞（调用 OneBot 的 `send_like` 类接口），可配批次、单批次数与批次间隔 | `Config.example.like.enable` 默认 **false**，且 `targets` 不能为空；需要适配器提供 `sendApi` / `sendLike` / `like` 之一；**没有群指令**，纯定时任务 |
-| QQBot 接口 | `apps/interface.js` | 给 QQBot 适配器补群信息、群内机器人状态、禁言、入群申请列表等接口，并把 `mqqapi`/`laTex`/`qagent` 挂到 `global.Mozu` | `Config.config.interface.enable` 默认 **false**，要去锅巴面板手动打开；仅 QQBot |
+| 天选之人 | `apps/example/whois.js` | `天选之人` 随机抽一个群成员禁言 5～60 秒；`self_add_rate` 打开时发起人有约三成概率自己中招 | `Config.example.whois.enable` 默认 **true**；仅 `QQBot`、仅群聊；机器人必须是群管理 |
+| 群管 | `apps/groupAdmin/groupAdmin.js` | `#禁言` / `#解禁` / `#解除全部禁言`，可一次 @ 多人，支持中文数字与秒/分/时/天等时间单位 | 仅 `QQBot`；`Config.groupAdmin.setting.enable` 默认 **false**（没有锅巴面板，只能手改 YAML）；机器人必须是群管理，操作者需群主 / 群管 / 主人 |
+| QQBot 接口 | `apps/interface.js` | 给 QQBot 适配器补群信息、群内机器人状态、禁言、入群申请列表等接口，并把 `mqqapi`/`laTex`/`qagent` 挂到 `global.Mozu` | `Config.config.interface.enable` 默认 **false**，要去锅巴面板手动打开；仅 QQBot。注意群管与天选之人是直接调 `model/QQBot/interface.js` 的，**不依赖**这个开关 |
 | 更新 | `apps/update.js` | `#魔族陌更新`（含强制变体）、`#魔族陌更新日志` | 更新要主人权限；底层依赖云崽自带的更新模块 |
 
 各功能的具体指令、参数与限制见[功能](/feature/xiuxian)栏目；`#伪造聊天` 的语法细节见 [伪造聊天](/feature/make-message)。
@@ -38,8 +40,9 @@
 | --- | --- | --- | --- |
 | `apps/` | 指令层 | 每个 `.js` 就是一个 `plugin` 子类，声明 `reg` 正则与 `fnc` 处理函数；`index.js` 会递归加载该目录下所有 `.js` | `apps/xiuxian/xiuxian.js`、`apps/example/fayan.js` |
 | `model/` | 业务层 | 玩法逻辑、配置读写与版本信息 | `model/xiuxian/xiuxian.js`（玩法核心）、`model/Config/Config.js`（YAML 配置）、`model/Config/Version.js`、`model/ai/openai.js` |
-| `lib/` | 工具层 | 与业务无关的基础设施 | `lib/Redis.js`（ioredis 客户端）、`lib/protocol.js`（mqqapi / laTex / qagent）、`lib/TwoFactorAuth.js`（TOTP） |
-| `config/` | 配置层 | 三组配置目录 `config/`、`xiuxian/`、`panel/`，每组下 `default/` 是模板、`config/` 是用户实际生效的配置 | `config/xiuxian/default/setting.yaml`、`config/panel/default/login.yaml` |
+| `lib/` | 工具层 | 与业务无关的基础设施 | `lib/Redis.js`（ioredis 客户端）、`lib/protocol.js`（mqqapi / laTex / qagent）、`lib/TwoFactorAuth.js`（TOTP）、`lib/panelAuth.js`（管理台令牌） |
+| `config/` | 配置层 | 五组配置目录 `config/`、`xiuxian/`、`groupAdmin/`、`example/`、`panel/`，每组下 `default/` 是模板、`config/` 是用户实际生效的配置 | `config/xiuxian/default/setting.yaml`、`config/groupAdmin/default/setting.yaml`、`config/panel/default/login.yaml` |
+| `public/` | 静态资源 | 管理台的字体与图标，**不参与打包**，由 Express 挂第二个静态目录直接对外提供 | `public/fonts/loli.ttf`、`public/Mo.png`、`public/favicon.ico` |
 | `guoba/` | 面板层 | 锅巴面板的接入与表单定义，根目录的 `guoba.support.js` 是对外入口 | `guoba/index.js`、`guoba/pluginInfo.js`、`guoba/schemas/` |
 | `server/` + `src/` | 内置管理台 | `src/` 是 Vue3 + Ant Design Vue 源码，`server/` 是 Express 服务与构建产物（`server/static`） | `server/index.js`、`server/router/`、`src/views/` |
 | `scripts/` | 脚本层 | 可复用的脚本工具 | `scripts/backup.js`（Redis 键备份 / 还原） |

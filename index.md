@@ -1,5 +1,6 @@
 ---
 layout: home
+title: 魔族陌插件
 
 hero:
   name: Mozu-Plugin

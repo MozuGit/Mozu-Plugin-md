@@ -44,9 +44,9 @@ apiKey: "sk-***"
 `baseURL` 与 `model` 的默认值是随仓库发布的示例。源码通过 `openai` 包的 `client.chat.completions.create()` 发起请求，所以任何兼容 OpenAI Chat Completions 协议的服务都能用，但**模型名写错或密钥无效时请求会失败**——失败后不是放行，而是掉进人工审核（见下文）。
 :::
 
-## 提示词写死在代码里
+## 提示词内置在代码中
 
-提示词没有配置项，它硬编码在 `model/ai/openai.js` 中：
+提示词没有配置项，它直接写在 `model/ai/openai.js` 里：
 
 ```js [model/ai/openai.js]
 const complettion = await client.chat.completions.create({

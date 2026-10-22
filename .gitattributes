@@ -1,0 +1,7 @@
+# 统一行尾：仓库与工作区都使用 LF
+# 不加这一条时，Windows 上系统的 core.autocrlf=true 会让 git 在每次
+# add / checkout 时尝试把文本文件改写成 CRLF，并刷出 "LF will be replaced
+# by CRLF" 警告；跨平台协作时也容易出现整文件的行尾噪音 diff。
+#
+# text=auto 会自动识别二进制文件（如 public 下的 png / ico），不会误转。
+* text=auto eol=lf

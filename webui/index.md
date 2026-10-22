@@ -145,27 +145,19 @@ try {
 
 ## 界面：琉璃拟态（Liquid Glass）
 
-管理台整体换了一套皮肤，**常驻、没有开关**：所有页面共用同一套玻璃拟态样式，由 `src/styles/liquid-glass.css`（全局样式）与 `src/composables/useGlassPointer.js`（指针高光）提供，在 `src/main.js` 里一次性引入。
+管理台整体换了一套皮肤，**常驻、没有开关**。样式集中在 `src/styles/liquid-glass.css`，指针高光由 `src/composables/useGlassPointer.js` 提供，都在 `src/main.js` 里一次性引入。
 
-能直接看到的变化：
+直接能看到的：
 
-| 变化 | 说明 |
-| --- | --- |
-| 背景 | 原来根布局是一条黄→紫的实色渐变，现在换成固定的「极光」层：五团径向渐变（青 / 紫 / 粉 / 蓝 / 薄荷）+ 56px 细网格 + 三个缓慢漂移的高斯模糊光斑（`lgBlobA/B/C`，26s / 32s / 29s） |
-| 玻璃面板 | 卡片、侧边栏、模态框、下拉框、消息提示都改成半透明白 + `backdrop-filter: blur(18px) saturate(175%)`，分 `.lg-glass`（18px）、`--strong`（30px，侧边栏 / 弹窗 / 登录卡）、`--weak`（不模糊，内层小卡与表头）三档 |
-| 指针高光 | 鼠标移到任意卡片或弹窗上，会有一团 340px 的白色高光跟着光标走（`useGlassPointer()` 写 `--lg-spec-x` / `--lg-spec-y`，用 `requestAnimationFrame` 节流；触屏设备直接跳过） |
-| 扫光与折射 | 悬停时有一道 115° 的白色扫光来回一次（`lgSheen` 2.6s）；登录卡、首页快捷导航、首页统计弹窗还额外叠了一层 SVG `feTurbulence` + `feDisplacementMap` 的真实折射 |
-| 字体 | 全局换成 `public/fonts/loli.ttf`（字体族 `Loli`，按 `font-weight: 100 900` 声明），并通过 Ant Design 的 `token.fontFamily` 把组件内文字也一起覆盖 |
-| 组件重绘 | 表格、输入框、选择器、按钮、标签、抽屉、Tooltip、滚动条等统一改用 `--lg-*` 变量 |
+- **背景**：从原来的黄→紫实色渐变换成「极光」层——五团径向渐变 + 细网格 + 三个缓慢漂移的光斑。
+- **玻璃面板**：卡片、侧边栏、弹窗、下拉框都改成半透明白 + 背景模糊，分普通、厚、薄三档。
+- **指针高光**：鼠标移到卡片或弹窗上会有一团白光跟着走；触屏设备自动跳过。
+- **字体**：全局换成 `public/fonts/loli.ttf`（字体族 `Loli`）。
+- **组件统一重绘**：表格、输入框、按钮、标签、滚动条等都跟着换色。
 
-要改配色就动 `liquid-glass.css` 里 `:root` 下的 `--lg-*` 变量，例如 `--lg-brand` / `--lg-brand-deep`（主色 `#667eea` → `#764ba2`）、`--lg-radius`（12px）、`--lg-blur`（18px）、`--lg-saturate`（175%）。
+要改配色，动 `liquid-glass.css` 里 `:root` 下的 `--lg-*` 变量即可，例如 `--lg-brand`（主色）、`--lg-radius`（圆角）、`--lg-blur`（模糊半径）。
 
-它会按系统设置自动降级，不需要手动处理：
-
-- 系统开了「减少透明效果」（`prefers-reduced-transparency: reduce`）→ 面板换成接近不透明的 `--lg-surface-solid`，模糊与光斑关闭。
-- 系统开了「减少动态效果」（`prefers-reduced-motion: reduce`）→ 动画与悬停位移全部关掉。
-- 浏览器不支持 `backdrop-filter` → 回落到接近不透明的底色。
-- 窄屏（≤768px）→ 模糊半径调小、第三个光斑隐藏、指针高光关闭。
+它会跟着系统设置自动降级，不需要手动处理：开了「减少透明效果」就换成不透明面板，开了「减少动态效果」就关掉动画，浏览器不支持 `backdrop-filter` 时回落成纯色，窄屏会减小模糊并关掉指针高光。
 
 ::: warning 字体有 10 MB
 `public/fonts/loli.ttf` 约 **10.8 MB**，由 Express 以默认缓存头（`maxAge: 0`）直接提供，也没有开 gzip（`package.json` 里没有 `compression` 依赖）。所以清空缓存后第一次打开管理台会明显卡一下。`font-display: swap` 只保证文字不长时间空白，并不能减少传输量。

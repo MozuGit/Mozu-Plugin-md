@@ -28,7 +28,7 @@
 | 发言统计 | `apps/example/fayan.js` | `#发言榜` 查日/周/月榜，`#清除发言 @某人`、`#清除本群发言` 清记录 | 需要 Redis；两个清除指令限主人；非 QQBot 走纯文本，QQBot 下可发 Markdown + 按钮 |
 | 定时点赞 | `apps/example/like.js` | 按 cron 定时给 `targets` 里的 QQ 点赞（调用 OneBot 的 `send_like` 类接口），可配批次、单批次数与批次间隔 | `Config.example.like.enable` 默认 **false**，且 `targets` 不能为空；需要适配器提供 `sendApi` / `sendLike` / `like` 之一；**没有群指令**，纯定时任务 |
 | 天选之人 | `apps/example/whois.js` | `天选之人` 随机抽一个群成员禁言 5～60 秒；`self_add_rate` 打开时发起人有约三成概率自己中招 | `Config.example.whois.enable` 默认 **true**；仅 `QQBot`、仅群聊；机器人必须是群管理 |
-| 群管 | `apps/groupAdmin/groupAdmin.js` | `#禁言` / `#解禁` / `#解除全部禁言`，可一次 @ 多人，支持中文数字与秒/分/时/天等时间单位 | 仅 `QQBot`；`Config.groupAdmin.setting.enable` 默认 **false**（没有锅巴面板，只能手改 YAML）；机器人必须是群管理，操作者需群主 / 群管 / 主人 |
+| 群管 | `apps/groupAdmin/groupAdmin.js` | `#禁言` / `#解禁` / `#解除全部禁言` / `#踢`（`#踢黑` 同时拉黑），可一次 @ 多人，支持中文数字与秒/分/时/天等时间单位 | 仅 `QQBot`；`Config.groupAdmin.setting.enable` 默认 **false**（没有锅巴面板，只能手改 YAML）；机器人必须是群管理，操作者需群主 / 群管 / 主人 |
 | QQBot 接口 | `apps/interface.js` | 给 QQBot 适配器补群信息、群内机器人状态、禁言、入群申请列表等接口，并把 `mqqapi`/`laTex`/`qagent` 挂到 `global.Mozu` | `Config.config.interface.enable` 默认 **false**，要去锅巴面板手动打开；仅 QQBot。注意群管与天选之人是直接调 `model/QQBot/interface.js` 的，**不依赖**这个开关 |
 | 更新 | `apps/update.js` | `#魔族陌更新`（含强制变体）、`#魔族陌更新日志` | 更新要主人权限；底层依赖云崽自带的更新模块 |
 

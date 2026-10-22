@@ -9,7 +9,7 @@
 | 触发方式 | **只有定时任务（`task`），没有任何群指令**——源码里除 `task` 之外没有配置 `rule`，发送任何指令都不会触发它 |
 | 默认状态 | **关闭**：`enable: false`，不打开开关就不会执行 |
 | 依赖能力 | 机器人需要具备 `sendApi` / `sendLike` / `like` 三者之一，源码优先走 `sendApi('send_like', { user_id, times })` |
-| 插件名 | 「魔族陌:定时点赞」，`event: message`，`priority: 1145`（源码写死） |
+| 插件名 | 「魔族陌:定时点赞」，`event: message`，优先级在源码中固定为 `1145` |
 | cron 来源 | `Config.example.like.cron || '0 0 8 * * ?'`，在插件加载时注册进 `task` |
 
 ::: warning 它没有群指令

@@ -15,7 +15,7 @@
 | `example.makeMessage.enable` | 伪造聊天开关，默认 `true` |
 | `example.makeMessage.onlyMaster` | 仅主人使用，默认 `false`；打开后只有主人能触发 |
 
-插件名为「魔族陌:伪造聊天」，优先级 `priority: 1145`（源码写死，锅巴面板不提供该项）。
+插件名为「魔族陌:伪造聊天」，优先级在源码中固定为 `1145`，锅巴面板不提供该项。
 
 ## 指令一览
 

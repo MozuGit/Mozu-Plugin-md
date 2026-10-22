@@ -137,7 +137,7 @@ Mozu-Plugin/
 | `apps/example/like.js` | 定时点赞：只有 `task`（按 cron 给目标 QQ 点赞），没有 `rule` |
 | `apps/example/makeMessage.js` | 伪造聊天 |
 | `apps/example/whois.js` | 天选之人：随机抽一个群成员禁言几秒（插件名就叫「天选之人」） |
-| `apps/groupAdmin/groupAdmin.js` | 官机群管：`#禁言` / `#解禁` / `#解除全部禁言` |
+| `apps/groupAdmin/groupAdmin.js` | 官机群管：`#禁言` / `#解禁` / `#解除全部禁言` / `#踢`（`#踢黑`） |
 
 ::: tip 怎么加新模块
 完整流程见 [新增功能模块](/develop/module)。
@@ -159,9 +159,9 @@ Mozu-Plugin/
 | `Config/Config.js` | 配置中心。启动时把 `config/<目录>/default/*.yaml` 复制到同级的 `config/` 目录，并用 chokidar 监听改动。`dirCfgNames` 目前是 `config`、`xiuxian`、`groupAdmin`、`example`、`panel` 五个目录，可用 `Config.example.fayan`、`Config.xiuxian.setting` 这种「`Config.<组名>.<文件名>`」代理方式直接读某个 yaml |
 | `Config/YamlReader.js` | 基于 `yaml` 包的读写封装，提供 `get / set / delete / addIn / jsonData` |
 | `Config/Version.js` | 导出 `Plugin_Path`、`Plugin_Name`、`Plugin_Version`、`Plugin_pkg` |
-| `QQBot/interface.js` | `QQBotApi` 类：把 `GET/POST /v2/groups/{id}/…` 这组请求（群信息、机器人状态、入群申请、禁言列表、禁言）封装成方法。`apps/groupAdmin/` 与 `apps/example/whois.js` 直接 `new` 它，**不受 `config.interface.enable` 影响** |
+| `QQBot/interface.js` | `QQBotApi` 类：把 `GET/POST /v2/groups/{id}/…` 这组请求（群信息、机器人状态、入群申请、禁言列表、禁言、`batch_remove_members` 踢人）封装成方法。`apps/groupAdmin/` 与 `apps/example/whois.js` 直接 `new` 它，**不受 `config.interface.enable` 影响** |
 | `groupAdmin/common.js` | `checkPermission(e, permission, role, isReply)`：同时校验操作者（主人 / 群主 / 群管）与机器人（是否群管理）权限，失败时直接回复原因 |
-| `groupAdmin/groupAdmin.js` | `GroupAdmin` 类：`getMuteList()` 读群禁言列表、`muteMembers(members)` 批量禁言（`time` 为 0 即解禁） |
+| `groupAdmin/groupAdmin.js` | `GroupAdmin` 类：`getMuteList()` 读群禁言列表、`muteMembers(members)` 批量禁言（`time` 为 0 即解禁）、`kickMembers(members, addBlack)` 批量踢人（成员可传 openid 数组，也可传 `{ member_openid }` 对象数组，内部会先取出 openid） |
 | `ai/openai.js` | `aiAuditText()`：把用户文本丢给 OpenAI 兼容接口判断是否违规 |
 | `xiuxian/xiuxian.js` | 修仙核心：境界突破、修炼开采、闭关、切磋、妖兽、秘境、储物袋、宗门、排行榜等 |
 | `xiuxian/tools/xiuxianText.js` | 指令文案层，按 `commandHandlers` 与 `prefixHandlers` 分发并拼装 Markdown |

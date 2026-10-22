@@ -5,7 +5,8 @@ const SITE_REPO = 'https://github.com/MozuGit/Mozu-Plugin-md'
 
 export default defineConfig({
   lang: 'zh-CN',
-  title: 'Mozu-Plugin',
+  title: '魔族陌插件 | Mozu-Plugin',
+  titleTemplate: ':title | Mozu-Plugin',
   description: '适用于 TRSS-Yunzai 的娱乐功能插件，内置魔族陌修仙、群管禁言、伪造聊天、发言统计与可视化配置面版',
 
   base: '/',
@@ -24,7 +25,7 @@ export default defineConfig({
     ['meta', { name: 'author', content: 'MozuGit' }],
     ['meta', { name: 'keywords', content: 'Yunzai,TRSS-Yunzai,Mozu-Plugin,魔族陌,修仙插件,群管插件,QQ机器人,OneBot' }],
     ['meta', { property: 'og:type', content: 'website' }],
-    ['meta', { property: 'og:title', content: 'Mozu-Plugin' }],
+    ['meta', { property: 'og:title', content: '魔族陌插件 | Mozu-Plugin' }],
     ['meta', { property: 'og:description', content: '适用于 TRSS-Yunzai 的娱乐功能插件：魔族陌修仙、群管禁言、天选之人、伪造聊天、发言统计、可视化配置面版' }],
     ['meta', { property: 'og:image', content: '/Mo.png' }]
   ],

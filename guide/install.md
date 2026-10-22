@@ -146,4 +146,4 @@ Redis 相关配置在 `config/config/default/Redis.yaml`：`host`、`port`、`da
 
 想在图形界面里改上面这些配置，需要额外安装锅巴面板，安装方式以它的官方仓库为准：<https://github.com/guoba-yunzai/guoba-plugin>。插件侧的接入入口是根目录的 `guoba.support.js`，面板里能看到哪些配置项见[锅巴面板配置](/config/guoba)。
 
-装好插件后接下来建议读：[更新与卸载](/guide/update)（怎么升级、怎么备份）→ [常见问题](/guide/faq)（踩坑速查）。
+装好插件后接下来建议读：[更新与卸载](/guide/update)（怎么升级、怎么备份）→ [常见问题](/guide/faq)（排错速查）。
